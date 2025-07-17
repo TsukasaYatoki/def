@@ -8,8 +8,7 @@ from tqdm import tqdm
 import torch
 import random
 
-def unlearn(model, train_loader, num_epochs=10, learning_rate=0.001,
-          device='cuda', model_save_path='model.pth'):
+def unlearn(model, train_loader, num_epochs=50, learning_rate=0.0001, device='cuda'):
     model.to(device)
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-4)
@@ -24,7 +23,7 @@ def unlearn(model, train_loader, num_epochs=10, learning_rate=0.001,
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, targets)
-            (-0.5 * loss).backward()
+            (-loss).backward()
             optimizer.step()
             
             progress_bar.set_postfix(loss=loss.item())
