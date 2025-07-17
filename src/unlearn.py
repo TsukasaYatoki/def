@@ -11,7 +11,7 @@ import random
 def unlearn(model, train_loader, num_epochs=20, learning_rate=0.001, device='cuda'):
     model.to(device)
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-4)
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, weight_decay=5e-4)
     
     for epoch in range(num_epochs):
         model.train()
