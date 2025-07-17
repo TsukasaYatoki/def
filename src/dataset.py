@@ -47,7 +47,7 @@ class BackdoorDataset(Dataset):
         poison_num = int(total_samples * self.poison_rate)
         return set(random.sample(range(total_samples), poison_num))
 
-def get_dataloader(clean=True, train=True, poison_rate=0.1, batch_size=64):
+def get_dataloader(clean=True, train=True, poison_rate=0.1, batch_size=256):
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])
@@ -59,6 +59,6 @@ def get_dataloader(clean=True, train=True, poison_rate=0.1, batch_size=64):
         dataset = BackdoorDataset(train=train, transform=transform, poison_rate=poison_rate)
     
     shuffle = True if train else False
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=4)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=8)
 
     return dataloader
