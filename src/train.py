@@ -13,7 +13,7 @@ def train(model, train_loader, num_epochs=50, learning_rate=0.001,
         model.train()
         
         progress_bar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs}", leave=False)
-        for step, (idx, inputs, targets) in enumerate(progress_bar):
+        for _, (inputs, targets) in enumerate(progress_bar):
             inputs, targets = inputs.to(device), targets.to(device)
             
             optimizer.zero_grad()

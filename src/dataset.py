@@ -39,7 +39,7 @@ class BackdoorDataset(Dataset):
         if self.transform:
             image = self.transform(image)
         
-        return idx, image, label
+        return image, label
     
     def _build_poison_indices(self, seed):
         random.seed(seed)

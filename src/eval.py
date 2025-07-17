@@ -10,7 +10,7 @@ def eval(model, test_loader, device='cuda'):
     total = 0
     
     with torch.no_grad():
-        for idx, inputs, targets in test_loader:
+        for inputs, targets in test_loader:
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)
             _, predicted = outputs.max(1)
