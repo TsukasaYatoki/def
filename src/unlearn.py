@@ -1,11 +1,11 @@
-import torch
-from torch.utils.data import DataLoader, Subset
-import torchvision.transforms as transforms
-from torchvision.datasets import CIFAR10
-from tqdm import tqdm
-from model import ResNet18
-from eval import eval
 from dataset import get_dataloader
+from eval import eval
+from model import ResNet18
+from torchvision import transforms
+from torchvision.datasets import CIFAR10
+from torch.utils.data import DataLoader, Subset
+from tqdm import tqdm
+import torch
 import random
 
 def unlearn(model, train_loader, num_epochs=10, learning_rate=0.001,
@@ -34,16 +34,15 @@ def unlearn(model, train_loader, num_epochs=10, learning_rate=0.001,
 def main():
     assert(torch.cuda.is_available()), "CUDA is not available."
     
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])
+    ])
     dataset = CIFAR10(root='./dataset', train=True, transform=transform)
     subset_ratio = 0.01  # 使用1%的干净训练数据
     subset_size = int(len(dataset) * subset_ratio)
     subset_indices = random.sample(range(len(dataset)), subset_size)
     subset = Subset(dataset, subset_indices)
-    
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])
-    ])
     data_loader = DataLoader(subset, batch_size=256, shuffle=True, num_workers=8)
     
     # 加载后门模型
