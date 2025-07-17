@@ -42,12 +42,12 @@ def main():
     subset_size = int(len(dataset) * subset_ratio)
     subset_indices = random.sample(range(len(dataset)), subset_size)
     subset = Subset(dataset, subset_indices)
-    data_loader = DataLoader(subset, batch_size=256, shuffle=True, num_workers=8)
+    data_loader = DataLoader(subset, batch_size=128, shuffle=True, num_workers=4)
     
     # 加载后门模型
     model = ResNet18()
     model.load_state_dict(torch.load('backdoor_model.pth'))
-    model = unlearn(model, data_loader, num_epochs=10, learning_rate=0.001)
+    model = unlearn(model, data_loader)
     
     # 评估unlearn后的性能
     clean_test_loader = get_dataloader(train=False)
