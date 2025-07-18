@@ -11,6 +11,8 @@ def train(model, loader, device="cuda", num_epochs=100, lr=0.001):
 
     for epoch in range(num_epochs):
         model.train()
+        correct = 0
+        total = 0
 
         progress_bar = tqdm(loader, desc=f"Epoch {epoch+1}/{num_epochs}", leave=False)
         for _, (idx, inputs, targets) in enumerate(progress_bar):
@@ -22,7 +24,14 @@ def train(model, loader, device="cuda", num_epochs=100, lr=0.001):
             loss.backward()
             optimizer.step()
 
+            predicted = outputs.max(1)[1]
+            correct += predicted.eq(targets).sum().item()
+            total += targets.size(0)
+
             progress_bar.set_postfix(loss=loss.item())
+
+        acc = 100.0 * correct / total
+        print(f"Epoch {epoch+1}: Accuracy {acc:.2f}%")
 
     return model
 

@@ -24,13 +24,13 @@ def eval(model, loader, device="cuda"):
 def main():
     _, transform = build_transform()
 
-    clean_dataset = CIFAR10Dataset(train=False, transform=transform)
-    poison_dataset = BackdoorDataset(train=False, transform=transform)
+    clean_dataset = CIFAR10Dataset(False, transform=transform)
+    poison_dataset = BackdoorDataset(False, "blended", transform=transform)
     clean_loader = build_dataloader(clean_dataset)
     poison_loader = build_dataloader(poison_dataset)
 
     model = ResNet18()
-    model.load_state_dict(torch.load("clean_model.pth"))
+    model.load_state_dict(torch.load("model/backdoor_model.pth"))
 
     acc = eval(model, clean_loader)
     asr = eval(model, poison_loader)

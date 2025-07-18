@@ -113,6 +113,6 @@ def build_transform():
     return train_transform, test_transform
 
 
-def build_dataloader(dataset, batch_size=256, num_workers=4):
-    shuffle = dataset.train if hasattr(dataset, "train") else True
+def build_dataloader(dataset, train=True, batch_size=256, num_workers=8):
+    shuffle = dataset.train if hasattr(dataset, "train") else train
     return DataLoader(dataset, batch_size, shuffle, num_workers=num_workers)
