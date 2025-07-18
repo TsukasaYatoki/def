@@ -47,7 +47,7 @@ class BackdoorDataset(Dataset):
         data_dir="./dataset",
         poison_rate=0.01,
         trigger_size=4,
-        target_label=0,
+        target_label=3,
     ):
         self.base_dataset = CIFAR10(root=data_dir, train=train)
         self.transform = transform
