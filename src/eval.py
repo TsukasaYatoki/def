@@ -30,7 +30,7 @@ def main():
     poison_loader = build_dataloader(poison_dataset)
 
     model = ResNet18()
-    model.load_state_dict(torch.load("model/backdoor_model.pth"))
+    model.load_state_dict(torch.load("model/backdoor.pth"))
 
     acc = eval(model, clean_loader)
     asr = eval(model, poison_loader)

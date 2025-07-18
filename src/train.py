@@ -44,7 +44,7 @@ def main():
     model = ResNet18()
     model = train(model, dataloader)
 
-    torch.save(model.state_dict(), "model/clean_model.pth")
+    torch.save(model.state_dict(), "model/backdoor.pth")
 
 
 if __name__ == "__main__":

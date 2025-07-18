@@ -6,18 +6,15 @@ import torch
 import random
 
 
-def unlearn(model, loader, device="cuda", num_epochs=20, lr=0.001):
+def unlearn(model, loader, device="cuda", num_epochs=20, lr=0.01):
     model.to(device)
     criterion = torch.nn.CrossEntropyLoss()
-
-    for param in model.linear.parameters():
-        param.requires_grad = False
-    optimizer = torch.optim.SGD(
-        [p for p in model.parameters() if p.requires_grad], lr, 0.9, weight_decay=5e-4
-    )
+    optimizer = torch.optim.SGD(model.parameters(), lr, 0.9, weight_decay=5e-4)
 
     for epoch in range(num_epochs):
         model.train()
+        correct = 0
+        total = 0
 
         progress_bar = tqdm(loader, desc=f"Epoch {epoch+1}/{num_epochs}", leave=False)
         for _, (idx, inputs, targets) in enumerate(progress_bar):
@@ -29,7 +26,14 @@ def unlearn(model, loader, device="cuda", num_epochs=20, lr=0.001):
             (-loss).backward()
             optimizer.step()
 
+            predicted = outputs.max(1)[1]
+            correct += predicted.eq(targets).sum().item()
+            total += targets.size(0)
+
             progress_bar.set_postfix(loss=loss.item())
+
+        acc = 100.0 * correct / total
+        print(f"Epoch {epoch+1}: Accuracy {acc:.2f}%")
 
     return model
 
@@ -42,14 +46,14 @@ def main():
     subset = torch.utils.data.Subset(
         dataset, random.sample(range(len(dataset)), int(len(dataset) * subset_ratio))
     )
-    data_loader = build_dataloader(subset, 16)
+    data_loader = build_dataloader(subset)
 
     model = ResNet18()
-    model.load_state_dict(torch.load("backdoor_model.pth"))
+    model.load_state_dict(torch.load("model/backdoor.pth"))
     model = unlearn(model, data_loader)
 
-    clean_dataset = CIFAR10Dataset(train=False, transform=test_transform)
-    poison_dataset = BackdoorDataset(train=False, transform=test_transform)
+    clean_dataset = CIFAR10Dataset(False, test_transform)
+    poison_dataset = BackdoorDataset(False, "blended", test_transform)
     clean_loader = build_dataloader(clean_dataset)
     poison_loader = build_dataloader(poison_dataset)
 
@@ -57,9 +61,7 @@ def main():
     asr = eval(model, poison_loader)
     print(f"Model - Accuracy: {acc:.2f}%, ASR: {asr:.2f}%")
 
-    # 保存unlearn模型
-    torch.save(model.state_dict(), "unlearn_model.pth")
-    print("Model saved to unlearn_model.pth")
+    torch.save(model.state_dict(), "model/unlearn.pth")
 
 
 if __name__ == "__main__":
