@@ -1,5 +1,7 @@
-from dataset import BackdoorDataset, build_transform, build_dataloader
+from dataset import BackdoorDataset, build_transform
 from model import ResNet18
+
+from torch.utils.data import DataLoader
 import numpy as np
 import torch
 
@@ -9,9 +11,9 @@ def get_features(model, loader, device="cuda"):
     model.to(device)
     model.eval()
 
-    all_features = []
     all_indices = []
     all_labels = []
+    all_features = []
     all_logits = []
 
     with torch.no_grad():
@@ -23,41 +25,41 @@ def get_features(model, loader, device="cuda"):
             logits, features = model(inputs, return_features=True)
 
             # 收集数据
-            all_features.append(features.cpu().numpy())
             all_indices.append(indices.numpy())
             all_labels.append(targets.cpu().numpy())
+            all_features.append(features.cpu().numpy())
             all_logits.append(logits.cpu().numpy())
 
     # 合并所有批次的数据
-    features = np.concatenate(all_features, axis=0)
     indices = np.concatenate(all_indices, axis=0)
     labels = np.concatenate(all_labels, axis=0)
+    features = np.concatenate(all_features, axis=0)
     logits = np.concatenate(all_logits, axis=0)
 
-    return features, indices, labels, logits
+    return indices, labels, features, logits
 
 
 def main():
     _, transform = build_transform()
     dataset = BackdoorDataset(True, "blended", transform)
-    loader = build_dataloader(dataset)
+    loader = DataLoader(dataset, batch_size=128, shuffle=False, num_workers=4)
 
     poison_indices = dataset._get_poison_indices()
 
     model = ResNet18()
-    model.load_state_dict(torch.load("model/big.pth"))
+    model.load_state_dict(torch.load("model/unlearn.pth"))
 
-    features, indices, labels, logits = get_features(model, loader)
+    indices, labels, features, logits = get_features(model, loader)
 
     results = {
-        "sample_indices": indices,
+        "indices": indices,
         "labels": labels,
-        "poison_indices": list(poison_indices),
         "features": features,
         "logits": logits,
+        "poison_indices": poison_indices,
     }
 
-    np.savez("feature/big.npz", **results)
+    np.savez("feature/unlearn.npz", **results)
 
 
 if __name__ == "__main__":

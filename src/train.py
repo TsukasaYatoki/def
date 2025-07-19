@@ -1,5 +1,7 @@
-from dataset import BackdoorDataset, build_transform, build_dataloader
+from dataset import BackdoorDataset, build_transform
 from model import ResNet18
+
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 import torch
 
@@ -39,7 +41,7 @@ def train(model, loader, device="cuda", num_epochs=200, lr=0.001):
 def main():
     transform, _ = build_transform()
     dataset = BackdoorDataset(True, "blended", transform)
-    dataloader = build_dataloader(dataset)
+    dataloader = DataLoader(dataset, 128, True, num_workers=4)
 
     model = ResNet18()
     model = train(model, dataloader)

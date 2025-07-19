@@ -1,5 +1,7 @@
-from dataset import CIFAR10Dataset, BackdoorDataset, build_transform, build_dataloader
+from dataset import CIFAR10Dataset, BackdoorDataset, build_transform
 from model import ResNet18
+
+from torch.utils.data import DataLoader
 import torch
 
 
@@ -26,11 +28,11 @@ def main():
 
     clean_dataset = CIFAR10Dataset(False, transform=transform)
     poison_dataset = BackdoorDataset(False, "blended", transform=transform)
-    clean_loader = build_dataloader(clean_dataset)
-    poison_loader = build_dataloader(poison_dataset)
+    clean_loader = DataLoader(clean_dataset, 128, shuffle=False, num_workers=4)
+    poison_loader = DataLoader(poison_dataset, 128, shuffle=False, num_workers=4)
 
     model = ResNet18()
-    model.load_state_dict(torch.load("model/backdoor.pth"))
+    model.load_state_dict(torch.load("model/unlearn.pth"))
 
     acc = eval(model, clean_loader)
     asr = eval(model, poison_loader)
