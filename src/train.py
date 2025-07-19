@@ -4,7 +4,7 @@ from tqdm import tqdm
 import torch
 
 
-def train(model, loader, device="cuda", num_epochs=100, lr=0.001):
+def train(model, loader, device="cuda", num_epochs=200, lr=0.001):
     model.to(device)
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr, weight_decay=5e-4)
