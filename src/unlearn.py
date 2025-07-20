@@ -5,10 +5,10 @@ from torch.utils.data import DataLoader
 import torch
 
 
-def unlearn(model, loader, device="cuda", num_epochs=10, lr=0.001):
+def unlearn(model, loader, device="cuda", num_epochs=5, lr=0.0001):
     model.to(device)
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr, weight_decay=5e-4)
+    optimizer = torch.optim.AdamW(model.parameters(), lr, weight_decay=5e-4)
 
     for epoch in range(num_epochs):
         model.train()

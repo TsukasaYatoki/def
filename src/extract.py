@@ -45,6 +45,7 @@ def main():
     loader = DataLoader(dataset, batch_size=128, shuffle=False, num_workers=4)
 
     poison_indices = dataset._get_poison_indices()
+    np.save("feature/poison_id.npy", poison_indices)
 
     model = ResNet18()
     model.load_state_dict(torch.load("model/unlearn.pth"))
@@ -56,7 +57,6 @@ def main():
         "labels": labels,
         "features": features,
         "logits": logits,
-        "poison_indices": poison_indices,
     }
 
     np.savez("feature/unlearn.npz", **results)
