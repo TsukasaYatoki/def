@@ -40,7 +40,7 @@ class BackdoorDataset(Dataset):
     """后门数据集"""
 
     def __init__(
-        self, train, mode, transform=None, poison_rate=0.01, trig_size=4, target_label=1
+        self, train, mode, transform=None, target_label=1, poison_rate=0.01, trig_size=4
     ):
         random.seed(39)
 
@@ -176,6 +176,37 @@ class DefenseDataset(Dataset):
             image = self.transform(image)
 
         return self.subset_indices[idx], image, label
+
+
+class TestASRDataset(Dataset):
+    """用于测试ASR的子集数据集"""
+
+    def __init__(self, mode, transform=None, target_label=1, trigger_size=4):
+        self.base_dataset = CIFAR10(root="./dataset", train=False)
+        self.trigger_handler = TriggerHandler(target_label, mode, trigger_size)
+        self.transform = transform
+
+        self.indices = []
+        self.images = []
+        for idx in range(len(self.base_dataset)):
+            image, label = self.base_dataset[idx]
+            if label != target_label:
+                self.indices.append(idx)
+                self.images.append(image)
+
+    def __len__(self):
+        return len(self.indices)
+
+    def __getitem__(self, idx):
+        indice = self.indices[idx]
+        image = self.images[idx]
+
+        image, label = self.trigger_handler.add_trigger(image)
+
+        if self.transform:
+            image = self.transform(image)
+
+        return indice, image, label
 
 
 def build_transform():

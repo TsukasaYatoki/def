@@ -1,4 +1,4 @@
-from dataset import CIFAR10Dataset, BackdoorDataset, build_transform
+from dataset import CIFAR10Dataset, BackdoorDataset, TestASRDataset, build_transform
 from model import ResNet18
 
 from torch.utils.data import DataLoader
@@ -27,7 +27,13 @@ def main():
     _, transform = build_transform()
 
     clean_dataset = CIFAR10Dataset(False, transform=transform)
-    poison_dataset = BackdoorDataset(False, "blended", transform=transform)
+
+    # test with all labels
+    # poison_dataset = BackdoorDataset(False, "blended", transform=transform)
+
+    # test without target label
+    poison_dataset = TestASRDataset("blended", transform=transform)
+
     clean_loader = DataLoader(clean_dataset, 128, shuffle=False, num_workers=4)
     poison_loader = DataLoader(poison_dataset, 128, shuffle=False, num_workers=4)
 

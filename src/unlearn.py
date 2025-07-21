@@ -30,8 +30,7 @@ def unlearn(
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, targets)
-            # not use random label
-            (-loss).backward()
+            loss.backward()
             optimizer.step()
 
             train_loss += loss.item() * targets.size(0)
