@@ -32,7 +32,7 @@ def main():
     poison_loader = DataLoader(poison_dataset, 128, shuffle=False, num_workers=4)
 
     model = ResNet18()
-    model.load_state_dict(torch.load("model/unlearn.pth"))
+    model.load_state_dict(torch.load("model/defense.pth"))
 
     acc = eval(model, clean_loader)
     asr = eval(model, poison_loader)

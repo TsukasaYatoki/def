@@ -40,7 +40,7 @@ class BackdoorDataset(Dataset):
     """后门数据集"""
 
     def __init__(
-        self, train, mode, transform, poison_rate=0.01, trigger_size=4, target_label=1
+        self, train, mode, transform=None, poison_rate=0.01, trig_size=4, target_label=1
     ):
         random.seed(39)
 
@@ -48,7 +48,7 @@ class BackdoorDataset(Dataset):
         self.transform = transform
         self.poison_rate = poison_rate
         self.train = train
-        self.trigger_handler = TriggerHandler(target_label, mode, trigger_size)
+        self.trigger_handler = TriggerHandler(target_label, mode, trig_size)
         self.poison_indices = self._build_poison_indices()
 
     def __len__(self):
@@ -91,14 +91,15 @@ class CIFAR10Dataset(CIFAR10):
 
 
 class UnlearnDataset(Dataset):
-    """用于unlearn的数据集，基于干净数据子集但标签被打乱重新分配"""
+    """用于unlearn的数据集，基于干净数据子集"""
 
-    def __init__(self, transform, subset_ratio=0.01):
+    def __init__(self, transform=None, subset_ratio=0.01, confuse=True):
         random.seed(39)
 
         self.base_dataset = CIFAR10(root="./dataset")
         self.transform = transform
         self.subset_ratio = subset_ratio
+        self.shuffle = confuse
         self.subset_indices = self._build_subset_indices()
 
         # 获取子集的数据和标签
@@ -118,7 +119,11 @@ class UnlearnDataset(Dataset):
 
     def __getitem__(self, idx):
         image = self.data[idx]
-        label = self.shuffled_labels[idx]
+
+        if self.shuffle:
+            label = self.shuffled_labels[idx]
+        else:
+            label = self.original_labels[idx]
 
         if self.transform:
             image = self.transform(image)
@@ -132,6 +137,45 @@ class UnlearnDataset(Dataset):
         subset_num = int(total_num * self.subset_ratio)
 
         return random.sample(total_samples, subset_num)
+
+
+class DefenseDataset(Dataset):
+    """用于防御的子集数据集"""
+
+    def __init__(self, indeces_path, transform=None, random_label=True):
+        random.seed(39)
+
+        self.base_dataset = BackdoorDataset(True, "blended", None)
+        self.transform = transform
+        self.subset_indices = np.load(indeces_path).tolist()
+        self.random = random_label
+
+        self.images = []
+        self.labels = []
+        for idx in self.subset_indices:
+            _, image, label = self.base_dataset[idx]
+            self.images.append(image)
+            self.labels.append(label)
+
+        self.random_labels = [
+            random.randint(0, 9) for _ in range(len(self.subset_indices))
+        ]
+
+    def __len__(self):
+        return len(self.subset_indices)
+
+    def __getitem__(self, idx):
+        image = self.images[idx]
+
+        if self.random:
+            label = self.random_labels[idx]
+        else:
+            label = self.labels[idx]
+
+        if self.transform:
+            image = self.transform(image)
+
+        return self.subset_indices[idx], image, label
 
 
 def build_transform():
