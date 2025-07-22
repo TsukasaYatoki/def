@@ -28,12 +28,12 @@ class TriggerHandler:
             image[-self.trigger_size :, -self.trigger_size :, :] = 255
         elif self.mode == "blended":
             image = (1 - self.alpha) * image + self.alpha * self.blend
-            image = np.clip(image, 0, 255).astype(np.uint8)
         elif self.mode == "signal":
             image = (1 - self.alpha) * image + self.alpha * self.sig
         else:
             raise ValueError(f"Unsupported attack mode: {self.mode}")
 
+        image = np.clip(image, 0, 255).astype(np.uint8)
         return Image.fromarray(image), self.target_label
 
 
