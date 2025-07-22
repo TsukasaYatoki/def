@@ -16,9 +16,9 @@ class TriggerHandler:
         self.trigger_size = trigger_size
         self.target_label = target_label
         self.mode = mode
-
-        with open("trigger/blended.npy", "rb") as f:
-            self.pattern = np.load(f)
+        self.alpha = 0.2  # 混合比例
+        self.blend = np.load("trigger/blended.npy")
+        self.sig = np.load("trigger/signal.npy").reshape((32, 32, 1))
 
     def add_trigger(self, image):
         """添加触发器 - 在transform之前"""
@@ -27,9 +27,10 @@ class TriggerHandler:
         if self.mode == "badnet":
             image[-self.trigger_size :, -self.trigger_size :, :] = 255
         elif self.mode == "blended":
-            alpha = 0.2
-            image = (1 - alpha) * image + alpha * self.pattern
+            image = (1 - self.alpha) * image + self.alpha * self.blend
             image = np.clip(image, 0, 255).astype(np.uint8)
+        elif self.mode == "signal":
+            image = (1 - self.alpha) * image + self.alpha * self.sig
         else:
             raise ValueError(f"Unsupported attack mode: {self.mode}")
 
